@@ -1,10 +1,11 @@
-//express server 생성
+//express 연동
 const express = require('express')
 //socket.io 연동
 var io = require('socket.io')
 ({
   path: '/webrtc'
 })
+//server 생성(express + socket.io)
 const app = express()
 //포트 번호 8080번으로 초기화
 const port = 8080
@@ -13,68 +14,70 @@ app.use(express.static(__dirname + '/build'))
 app.get('/', (req, res, next) => {
     res.sendFile(__dirname + '/build/index.html')
 })
-//terminal에 서버 실행 로그 띄우기
+//서버 실행 로그 띄우기(port는 8080번)
 const server = app.listen(port, () => console.log(`${port}포트에서 화상회의 application이 실행됩니다!`))
-//server는 socket.io에 의하여 실시간통신됨
+//web server는 socket.io에 의하여 실시간통신됨
 io.listen(server)
-
 // default namespace
 io.on('connection', socket => {
-  //connection 연결시 참석 log 
-  console.log('client가 화상회의 참여합니다')
+  //connection 성공시 참여 log 띄우기
+  console.log('client가 화상회의 참여합니다')  
 })
-//peers 정보
+
+//socket.io path를 통해 들어온 client peers로 설정
 const peers = io.of('/webrtcPeer')
-
-//모든 socket 연결에 대한 정보 저장
+//web에 연결된 peers에 대한 정보를 connectedPeers 정보로 저장
 let connectedPeers = new Map()
-
-//client가 web에 connection이 되면 terminal에 연결성공 log와 socket.id띄우기
+//peers가 web에 connection이 되면 
 peers.on('connection', socket => {
-  //connectPeers에 client의 socket.id 추가
+  //connectPeers에 connection된 peers의 socket 정보 추가
   connectedPeers.set(socket.id, socket)
-  console.log('참여한 client의 socket.id : ',socket.id)
-  //peer에게 연결 성공 log 전송
+  //server상에 connection된 peer의 socket id 띄우기
+  console.log('참여한 peer의 socket.id : ',socket.id)
+  //peers에게 연결 성공 data 전송
   socket.emit('connection-success', { 
     success: socket.id,
     peerCount: connectedPeers.size,
   })
-  //connectedPeers의 사이즈를 통해 몇명의 peer가 참석해있는지 전송(peer에게)
+  //broadcast 정의
   const broadcast = () => socket.broadcast.emit('joined-peers', {
     peerCount: connectedPeers.size,
   })
+  //connectedPeers의 크기를 통해 참석한 peers의 숫자 전송(peers에게)
   broadcast()
-  
-  //disconnected 된 peer 정보 전송(peer에게)
+  //disconnectedPeer 정의 
    const disconnectedPeer = (socketID) => socket.broadcast.emit('peer-disconnected', {  
      socketID: socketID
   })
-
-  //client가 web에 disconnection이 되면 terminal에 연결해제 log와 그 client의 socket.id를 connectedPeers에서 삭제
+  //server에서 peers의 disconnect 수신 받으면 연결해제 log띄우기  
   socket.on('disconnect', () => {
     console.log('client가 화상회의에서 퇴장합니다')
+    //connectedPeers 변수에서 퇴장한 peer의 socket.id 삭제
     connectedPeers.delete(socket.id)
+    //disconnected 된 peer 정보 전송(peer에게)
     disconnectedPeer(socket.id)
   })
-
+  //server에서 onlinePeers에 대한 정보 수신 받으면
   socket.on('onlinePeers', (data) => {
     for (const [socketID, _socket] of connectedPeers.entries()) {
-      // 자기 자신에게 보내면 안됨(remote peer일 경우에만 online-peer 전송)
+      // 자기 자신(local)이 아니라면(remote peer일 떄)
       if (socketID !== data.socketID.local) {
+        //online peer에 대한 정보 출력
         console.log('online-peer', data.socketID, socketID)
+        //online peer에 대한 정보 peers에게 전송
         socket.emit('online-peer', socketID)
       }
     }
   })
-
+  //server에서 offer event를 수신받으면
   socket.on('offer', (data) => {
-    //connectedPeers의 목록에 해당되는 socket의 정보가 있을때
+    //connectedPeers에 해당되는 socket의 정보가 있을때
     for (const [socketID, socket] of connectedPeers.entries()) {
-      // 자기 자신에게 보내면 안됨(remote peer일 경우에만 offer 전송)
+      // 자기 자신(local)이 아니라면(remote peer일 때)      
       if (socketID === data.socketID.remote) {
-        //offer peer의 socket 정보 추출
+        //offer peer의 socket 정보 출력
         console.log('Offer', socketID, data.socketID, data.payload.type)
-        //offer peer의 sdp정보 전송
+        //offer peer의 sdp정보,socketID 전송(remote peer에게)
         socket.emit('offer', {
             sdp: data.payload,
             socketID: data.socketID.local
@@ -83,15 +86,15 @@ peers.on('connection', socket => {
       }
     }
   })
-
+  //server에서 answer event를 수신받으면
    socket.on('answer', (data) => {
-    //connectedPeers의 목록에 해당되는 socket의 정보가 있을때
+    //connectedPeers에 해당되는 socket의 정보가 있을떄
     for (const [socketID, socket] of connectedPeers.entries()) {
-      // 자기 자신에게 보내면 안됨(remote peer일 경우에만 answer 전송)
+      // 자기 자신(local)이 아니라면(remote peer일 떄)
       if (socketID === data.socketID.remote) {
-        //answer peer의 socket 정보 추출
+        //answer peer의 socket 정보 출력
         console.log('Answer', socketID, data.socketID, data.payload.type)
-        //answer peer의 sdp정보 전송
+        //answer peer의 sdp정보,socketID 전송(offer 요청 peer에게)
         socket.emit('answer', {
             sdp: data.payload,
             socketID: data.socketID.local
@@ -100,15 +103,15 @@ peers.on('connection', socket => {
       }
     }
   }) 
-
-  
+  //server에서 candidate event를 수신받으면  
   socket.on('candidate', (data) => {
+    //connectedPeers에 해당되는 socket의 정보가 있을떄
     for (const [socketID, socket] of connectedPeers.entries()) {
-      // 다른 peer가 연결 될 경우(remote socketID)
+      // 자기 자신(local)이 아니라면(remote peer일 떄)
       if (socketID == data.socketID.remote) {
-        //candidate 연결할 peer의 socket 정보 추출
+        //candidate 연결할 peer의 socket 정보 출력
         console.log(socketID, data.payload)
-        //candidate 전송하기
+        //candidate,sockeID 전송(offer peer와 answer peer간에 connection이 완료됨)
         socket.emit('candidate', {
           candidate: data.payload,
           socketID: data.socketID.local
@@ -116,5 +119,4 @@ peers.on('connection', socket => {
       }
     }
   })
-
 })
