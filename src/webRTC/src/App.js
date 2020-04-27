@@ -1,43 +1,47 @@
-import React, { Component} from 'react';
+import React, { Component } from 'react';
 import io from 'socket.io-client'
 import Video from './components/video'
 import Videos from './components/videos'
+
 class App extends Component {
   constructor(props) {
-    super(props)    
-    this.state={
-      
+    super(props)
+    this.state = {
+
       // 새로운 offer가 생길 때마다 stream을 update하는 것을 방지하기 위해 localstream 변수로 관리
-      localStream : null,
+      localStream: null,
       //메인 화면에서 remote stream 객체를 고정하기 위해 사용
-      remoteStream : null, 
+      remoteStream: null,
       //모든 remote stream 객체들을 유지
-      remoteStreams : [],
+      remoteStreams: [],
       //모든 peer connection을 유지
-      peerConnections : {},
+      peerConnections: {},
       //선택된 video(확대 할 video)를 null로 초기화
-      selectedVideo : null,
+      selectedVideo: null,
       //webRTC 제공 STUN서버 이용
-      pc_config : {
+      pc_config: {
         "iceServers": [
-        {
-          urls : 'stun:stun.l.google.com:19302'
-        }
+          {
+            urls: 'stun:stun.l.google.com:19302'
+          }
         ]
       },
       //sdp 제약조건
       sdpConstraints: {
         'mandatory': {
-            'OfferToReceiveAudio': true,
-            'OfferToReceiveVideo': true
+          'OfferToReceiveAudio': true,
+          'OfferToReceiveVideo': true
         }
       },
     }
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
-    this.serviceIP = 'https://60eda71a.ngrok.io/webrtcPeer'
+    this.serviceIP = 'https://763c72a7.ngrok.io/webrtcPeer'
     //socket 초기화
     this.socket = null
   }
+
+
+
 
   getLocalStream = () => {
     //연결 성공시
@@ -48,7 +52,7 @@ class App extends Component {
         localStream: stream
       })
       //whoisOnline method 호출
-       this.whoisOnline()
+      this.whoisOnline()
     }
     //연결 실패시 
     const failure = (e) => {
@@ -60,17 +64,17 @@ class App extends Component {
       //일단 audio는 false로...
       audio: false,
       video: true,
-      options : {
+      options: {
         mirror: true,
       }
-    }    
+    }
     navigator.mediaDevices.getUserMedia(constraints)
       .then(success)
       .catch(failure)
   }
   whoisOnline = () => {
     //서버에 자신(local peer)의 정보를 전송
-    this.sendToPeer('onlinePeers', null, {local: this.socket.id})
+    this.sendToPeer('onlinePeers', null, { local: this.socket.id })
   }
   //sendToPeer method(socketID와 payload를 서버에 전송)
   sendToPeer = (messageType, payload, socketID) => {
@@ -86,7 +90,18 @@ class App extends Component {
       const peerConnections = { ...this.state.peerConnections, [socketID]: pc }
       this.setState({
         peerConnections
-      })            
+      })
+      let channel = pc.createDataChannel("chat", {
+        negotiated: true, id: 97
+      })
+      channel.onopen = function (event) {
+        channel.send('hi!');
+        console.log('channel' + channel.id);
+      }
+      channel.onmessage = function (event) {
+        console.log(event.data);
+      }
+      //dataChannel 활성화
       pc.onicecandidate = (e) => {
         //candidate 정보가 존재한다면
         if (e.candidate) {
@@ -104,14 +119,14 @@ class App extends Component {
           id: socketID,
           name: socketID,
           stream: e.streams[0]
-        }        
+        }
         this.setState(prevState => {
           // stream이 있다면 유지, 없을시 최신의 stream(가장 최신 참여자) 사용
-          const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: e.streams[0] }        
+          const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: e.streams[0] }
           // 현재 선택된 비디오 얻기
-          let selectedVideo = prevState.remoteStreams.filter(stream => stream.id === prevState.selectedVideo.id)          
+          let selectedVideo = prevState.remoteStreams.filter(stream => stream.id === prevState.selectedVideo.id)
           // 비디오가 리스트에 있다면 유지, 없다면 새로운 video stream으로 세팅
-          selectedVideo = selectedVideo.length ? {} : { selectedVideo: remoteVideo }                                
+          selectedVideo = selectedVideo.length ? {} : { selectedVideo: remoteVideo }
           return {
             // selectedVideo: remoteVideo,
             ...selectedVideo,
@@ -127,8 +142,8 @@ class App extends Component {
       if (this.state.localStream)
         pc.addStream(this.state.localStream)
       // pc를 return
-      callback(pc)    
-    } catch(e) {
+      callback(pc)
+    } catch (e) {
       //pc를 못불러 왔을때는 error 메세지 출력하기
       console.log('PC가 생성되지 않았습니다', e)
       // return
@@ -151,20 +166,20 @@ class App extends Component {
       this.getLocalStream()
       //연결 성공 log 출력
       console.log(data.success)
-      })
+    })
     //peer가 연결 해제 event를 서버로부터 수신받으면
-    this.socket.on('peer-disconnected', data =>{
+    this.socket.on('peer-disconnected', data => {
       //연결 해제 log 출력
       console.log('peer-disconnected', data)
       const remoteStreams = this.state.remoteStreams.filter(stream => stream.id !== data.socketID)
       this.setState(prevState => {
         // 연결 해제된 peer가 selected video라면 다른 remote video를 selected video로 선택
-        const selectedVideo = prevState.selectedVideo.id === data.socketID && remoteStreams.length ? { selectedVideo: remoteStreams[0] } : null        
+        const selectedVideo = prevState.selectedVideo.id === data.socketID && remoteStreams.length ? { selectedVideo: remoteStreams[0] } : null
         return {
           remoteStreams,
           ...selectedVideo,
         }
-        }
+      }
       )
     })
     //online-peer event를 서버로부터 수신받으면
@@ -172,24 +187,24 @@ class App extends Component {
       //연결된 모든 peer에 대한 정보 출력해주기
       console.log('connected peers ...', socketID)
       // 새로운 pc 생성
-      this.createPeerConnection(socketID, pc => {                
-          if (pc)                    
+      this.createPeerConnection(socketID, pc => {
+        if (pc)
           // offer 생성해주기 
-            pc.createOffer(this.state.sdpConstraints)
-              .then(sdp => {
-                // pc의 sdp 정보를 local description으로 설정해주기
-                pc.setLocalDescription(sdp)
-                // offer(pc의 sdp 정보)를 다른 peer에게 전송해주기                 
-                this.sendToPeer('offer', sdp, {
-                  local: this.socket.id,
-                  remote: socketID
-                })
-          })
-        })
+          pc.createOffer(this.state.sdpConstraints)
+            .then(sdp => {
+              // pc의 sdp 정보를 local description으로 설정해주기
+              pc.setLocalDescription(sdp)
+              // offer(pc의 sdp 정보)를 다른 peer에게 전송해주기                 
+              this.sendToPeer('offer', sdp, {
+                local: this.socket.id,
+                remote: socketID
+              })
+            })
+      })
     })
     //offer event를 서버로부터 수신받으면
     this.socket.on('offer', data => {
-      this.createPeerConnection(data.socketID, pc => {        
+      this.createPeerConnection(data.socketID, pc => {
         //수신받은 다른 peer의 localstream을 stream에 추가
         pc.addStream(this.state.localStream)
         //pc의 remote description에 전송받은 offer(sdp 정보)를 remote description으로 설정해주기
@@ -214,7 +229,7 @@ class App extends Component {
       const pc = this.state.peerConnections[data.socketID]
       console.log(data.sdp)
       // 다른 pc(peer)로부터 전송받은 answer를 remote description으로 설정해주기 
-      pc.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(()=>{})
+      pc.setRemoteDescription(new RTCSessionDescription(data.sdp)).then(() => { })
     })
     //candidate event를 서버로부터 수신받으면
     this.socket.on('candidate', (data) => {
@@ -241,17 +256,17 @@ class App extends Component {
         //local video
         <Video
           videoStyles={{
-            zIndex:2,
+            zIndex: 2,
             position: 'fixed',
-            top:0,            
+            top: 0,
             width: 400,
             height: 400,
             margin: 5,
             backgroundColor: 'black'
-          }}          
+          }}
           videoStream={this.state.localStream}
           autoPlay muted>
-        </Video>                
+        </Video>
         //remote video(selected)
         <Video
           videoStyles={{
@@ -261,23 +276,23 @@ class App extends Component {
             minWidth: '100%',
             minHeight: '100%',
             backgroundColor: 'black'
-          }}          
+          }}
           videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
           autoPlay>
-        </Video>     
+        </Video>
         //chat.js 추가되어야 함   
         <div style={{
-           zIndex:2,
-           position: 'fixed',      
-           top:0,
-           right:10,      
-           margin:5,
-           width: 400,      
-           bottom:120,
-           backgroundColor: 'white'   
-        }}>            
-        </div>      
-        <br/>
+          zIndex: 2,
+          position: 'fixed',
+          top: 0,
+          right: 10,
+          margin: 5,
+          width: 400,
+          bottom: 120,
+          backgroundColor: 'white'
+        }}>
+        </div>
+        <br />
         <div>
           //video 리스트들 출력(remote video들..)
           <Videos
@@ -285,7 +300,7 @@ class App extends Component {
             remoteStreams={this.state.remoteStreams}
           ></Videos>
         </div>
-        <br/>        
+        <br />
       </div>
     )
   }
