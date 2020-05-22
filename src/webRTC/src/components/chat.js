@@ -8,10 +8,23 @@ class Chat extends Component {
         this.state = {
         }
         this.sendMessage = this.sendMessage.bind(this)
+        this.sendMessageEnter = this.sendMessageEnter.bind(this)
         // 메세지를 보내주는 주된 함수의 바인딩
     }
+    sendMessageEnter() {
+        if (window.event.keyCode == 13) {
+            const message = document.getElementById('message')
 
-    sendMessage(e) {
+            this.socket.emit('chat', {
+                message: message.value
+            }, () => {
+                console.log(`message : ${message.value}`)
+            })
+        }
+    }
+    // enter 키로 sendMessage() 실행 -> 최적화 필요
+
+    sendMessage() {
         const message = document.getElementById('message')
 
         this.socket.emit('chat', {
@@ -46,7 +59,7 @@ class Chat extends Component {
     render() {
         return (
             <div class="container" id="chat">
-                <input id="message" type="text" placeholder="message" />
+                <input id="message" type="text" onKeyDown={this.sendMessageEnter} placeholder="message" />
                 <button onClick={this.sendMessage}>Send</button>
                 <div id="chat=window">
                     <div id="output"></div>
