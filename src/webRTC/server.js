@@ -1,4 +1,3 @@
-
 //express 연동
 const express = require('express')
 //socket.io 연동
@@ -6,8 +5,6 @@ var io = require('socket.io')
   ({
     path: '/webrtc'
   })
-
-
 //server 생성(express + socket.io)
 const app = express()
 //포트 번호 8080번으로 초기화
@@ -25,7 +22,17 @@ io.listen(server)
 io.on('connection', socket => {
   //connection 성공시 참여 log 띄우기
   console.log('client가 화상회의 참여합니다')
+  socket.on('chat', (data) => {
+    console.log('Received message!')
+    io.sockets.emit('chat', {
+      message: data.message,
+      socketID: socket.id
+    })
+  });
+  //chat.js와의 통신으로 메세지를 주고 받음
+  // 동시에 누가 보냈는지 식별을 위해 소켓 id를 인자로 같이 보내줌
 })
+
 
 //socket.io path를 통해 들어온 client peers로 설정
 const peers = io.of('/webrtcPeer')
@@ -59,10 +66,6 @@ peers.on('connection', socket => {
     connectedPeers.delete(socket.id)
     //disconnected 된 peer 정보 전송(peer에게)
     disconnectedPeer(socket.id)
-  })
-  socket.on('message', (data) => {
-    console.log(`${data}`)
-    socket.broadcast.emit('message', { text: data })
   })
   //server에서 onlinePeers에 대한 정보 수신 받으면
   socket.on('onlinePeers', (data) => {
@@ -121,8 +124,7 @@ peers.on('connection', socket => {
         //candidate,sockeID 전송(offer peer와 answer peer간에 connection이 완료됨)
         socket.emit('candidate', {
           candidate: data.payload,
-          socketID: data.socketID.local,
-          channel: data.channel
+          socketID: data.socketID.local
         })
       }
     }

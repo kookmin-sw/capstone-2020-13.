@@ -2,25 +2,14 @@ import React, { Component } from 'react';
 import io from 'socket.io-client'
 import Video from './components/video'
 import Videos from './components/videos'
-// import Chat from './components/chat'
-
-
-const dataChannelSend = document.querySelector('textarea#dataChannelSend')
-const sendButton = document.querySelector('input#sendButton')
-sendButton.onclick = sendData
-
-
-function sendData() {
-  const data = dataChannelSend.value
-  this.socket.emit('message', data)
-  console.log('Sent Data: ', data)
-}
+import Chat from './components/chat'
 
 class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      channel: null,
+
+
       // 새로운 offer가 생길 때마다 stream을 update하는 것을 방지하기 위해 localstream 변수로 관리
       localStream: null,
       //메인 화면에서 remote stream 객체를 고정하기 위해 사용
@@ -46,9 +35,10 @@ class App extends Component {
           'OfferToReceiveVideo': true
         }
       },
+
     }
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
-    this.serviceIP = 'https://e939b0d2.ngrok.io/webrtcPeer'
+    this.serviceIP = 'https://22749612.ngrok.io/webrtcPeer'
     //socket 초기화
     this.socket = null
   }
@@ -94,8 +84,6 @@ class App extends Component {
     })
   }
   createPeerConnection = (socketID, callback) => {
-
-
     try {
       let pc = new RTCPeerConnection(this.state.pc_config)
       // peerConnection 객체에 pc 추가하기
@@ -103,7 +91,6 @@ class App extends Component {
       this.setState({
         peerConnections
       })
-      const channel = pc.createDataChannel('chat')
 
       pc.onicecandidate = (e) => {
         //candidate 정보가 존재한다면
@@ -111,22 +98,11 @@ class App extends Component {
           this.sendToPeer('candidate', e.candidate, {
             //local,remote정보 전송
             local: this.socket.id,
-            remote: socketID,
-            channel: channel
+            remote: socketID
           })
         }
       }
       pc.oniceconnectionstatechange = (e) => {
-      }
-      channel.onopen = () => {
-        console.log('data channel open / ', channel.readyState)
-      }
-      channel.onclose = () => {
-        console.log('data channel close / ', channel.readyState)
-      }
-      channel.onmessage = (event, socketID) => {
-        console.log('Received message: ', event.data, ' from ', socketID)
-        io.broadcast().emit('message', event.data)
       }
       pc.ontrack = (e) => {
         const remoteVideo = {
@@ -153,6 +129,8 @@ class App extends Component {
       pc.close = () => {
         // alert('GONE')
       }
+
+
       if (this.state.localStream)
         pc.addStream(this.state.localStream)
       // pc를 return
@@ -164,11 +142,6 @@ class App extends Component {
       callback(null)
     }
   }
-  sendData = () => {
-    const data = dataChannelSend.value
-    this.socket.emit('message', data)
-    console.log('Sent Data: ', data)
-  }
 
 
   componentDidMount = () => {
@@ -179,13 +152,7 @@ class App extends Component {
         path: '/webrtc',
         query: {}
       }
-
     )
-
-    this.socket.on('message', data => {
-      console.log('I got message: ', data)
-    })
-
     //peer의 화면이 띄어짐
     //peer가 연결 성공 event를 서버로부터 수신받으면
     this.socket.on('connection-success', data => {
@@ -213,7 +180,6 @@ class App extends Component {
     this.socket.on('online-peer', socketID => {
       //연결된 모든 peer에 대한 정보 출력해주기
       console.log('connected peers ...', socketID)
-      this.socket.emit('message', "hello there")
       // 새로운 pc 생성
       this.createPeerConnection(socketID, pc => {
         if (pc)
@@ -281,7 +247,7 @@ class App extends Component {
     console.log(this.state.localStream)
     return (
       <div>
-        {/* //local video
+        //local video
         <Video
           videoStyles={{
             zIndex: 2,
@@ -307,27 +273,9 @@ class App extends Component {
           }}
           videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
           autoPlay>
-        </Video> */}
-        {/* <Chat>
-          <div id="buttons">
-            <button id="sendButton" disabled>Send</button>
-            <button id="closeButton" disabled>Close</button>
-          </div>
-          <div >
-            <textarea id="dataChannelSend" disabled placeholder="hhhhh"></textarea>
-          </div>
-
-        </Chat> */}
-
-
-        <div id="button">
-          <input type="button" id="sendButton" onclick="sendData()" value="send" />
-        </div>
-        <div>
-          <textarea id="dataChannelSend" placeholder="hhhh"></textarea>
-        </div>
-        //chat.js 추가되어야 함   
-        {/* <div style={{
+        </Video>
+        // chat box
+        <div style={{
           zIndex: 2,
           position: 'fixed',
           top: 0,
@@ -337,6 +285,7 @@ class App extends Component {
           bottom: 120,
           backgroundColor: 'white'
         }}>
+          <Chat></Chat>
         </div>
         <br />
         <div>
@@ -346,7 +295,7 @@ class App extends Component {
             remoteStreams={this.state.remoteStreams}
           ></Videos>
         </div>
-        <br />*/}
+        <br />
       </div>
     )
   }
