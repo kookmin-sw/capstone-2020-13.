@@ -6,6 +6,30 @@ var io = require('socket.io')
     path: '/webrtc'
   })
 //server 생성(express + socket.io)
+var roomNum = Math.random()
+
+var mongoose = require('mongoose')
+
+mongoose.connect('mongodb://localhost:27017/chattingdb')
+
+var db = mongoose.connection
+
+db.on('error', function () {
+  console.log('Connection Failed!')
+})
+
+db.once('open', function () {
+  console.log('Connected!')
+})
+
+var chat = mongoose.Schema({
+  roomNum: 'number',
+  memberId: 'string',
+  message: 'string'
+})
+
+var ChatMessage = mongoose.model('Schema', chat)
+
 const app = express()
 //포트 번호 8080번으로 초기화
 const port = 8080
@@ -24,6 +48,15 @@ io.on('connection', socket => {
   console.log('client가 화상회의 참여합니다')
   socket.on('chat', (data) => {
     console.log('Received message!')
+    var newChatMessage = new ChatMessage({ roomNum: roomNum, memberId: socket.id, message: data.message })
+    newChatMessage.save(function (error, data) {
+      if (error) {
+        console.log(error)
+      }
+      else {
+        console.log('Saved!')
+      }
+    })
     io.sockets.emit('chat', {
       message: data.message,
       socketID: socket.id

@@ -38,9 +38,10 @@ class App extends Component {
 
     }
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
-    this.serviceIP = 'https://22749612.ngrok.io/webrtcPeer'
+    this.serviceIP = 'https://dd1a5fb3.ngrok.io/webrtcPeer'
     //socket 초기화
     this.socket = null
+    this.db = null
   }
 
   getLocalStream = () => {
@@ -158,6 +159,7 @@ class App extends Component {
     this.socket.on('connection-success', data => {
       //getLocalStream method 호출을 통해 자신의 stream 가져오기
       this.getLocalStream()
+
       //연결 성공 log 출력
       console.log(data.success)
     })
