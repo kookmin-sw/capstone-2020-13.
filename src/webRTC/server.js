@@ -10,7 +10,7 @@ var roomNum = Math.random()
 
 var mongoose = require('mongoose')
 
-mongoose.connect('mongodb://localhost:27017/chattingdb')
+mongoose.connect('mongodb+srv://chatDBMaster:dlawlghd12@clusterforchat-qj9sz.mongodb.net/test?retryWrites=true&w=majority')
 
 var db = mongoose.connection
 
@@ -25,7 +25,8 @@ db.once('open', function () {
 var chat = mongoose.Schema({
   roomNum: 'number',
   memberId: 'string',
-  message: 'string'
+  message: 'string',
+  time: { type: Date, default: Date.now }
 })
 
 var ChatMessage = mongoose.model('Schema', chat)
@@ -64,6 +65,13 @@ io.on('connection', socket => {
   });
   //chat.js와의 통신으로 메세지를 주고 받음
   // 동시에 누가 보냈는지 식별을 위해 소켓 id를 인자로 같이 보내줌
+  socket.on('log', () => {
+    ChatMessage.find(function (error, chat) {
+      console.log('---Read all---')
+      if (error) console.log(error)
+      else console.log(chat)
+    })
+  })
 })
 
 
