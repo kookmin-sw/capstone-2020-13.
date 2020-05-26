@@ -38,9 +38,10 @@ class App extends Component {
 
     }
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
-    this.serviceIP = 'https://22749612.ngrok.io/webrtcPeer'
+    this.serviceIP = 'https://ee697ec9.ngrok.io/webrtcPeer'
     //socket 초기화
     this.socket = null
+  
   }
 
   getLocalStream = () => {
@@ -68,10 +69,33 @@ class App extends Component {
         mirror: true,
       }
     }
+    //screenshare 버튼 클릭시 
+    var screenshare = document.getElementById("screenshare")
+    //local video 클릭시
+    var localvideo = document.getElementById("localvideo")  
+
+    //default => local video
     navigator.mediaDevices.getUserMedia(constraints)
+    .then(success)
+    .catch(failure)
+    
+    //screenshare 버튼 클릭시 displaymedia 가져오기
+    screenshare.onclick=function(){
+    navigator.mediaDevices.getDisplayMedia(constraints)
       .then(success)
       .catch(failure)
+    }
+    //localvideo 버튼 클릭시 usermedia 가져오기
+    localvideo.onclick=function(){
+      navigator.mediaDevices.getUserMedia(constraints)
+      .then(success)
+      .catch(failure)
+    }
   }
+
+
+        
+
   whoisOnline = () => {
     //서버에 자신(local peer)의 정보를 전송
     this.sendToPeer('onlinePeers', null, { local: this.socket.id })
@@ -157,10 +181,12 @@ class App extends Component {
     //peer가 연결 성공 event를 서버로부터 수신받으면
     this.socket.on('connection-success', data => {
       //getLocalStream method 호출을 통해 자신의 stream 가져오기
+      
       this.getLocalStream()
       //연결 성공 log 출력
       console.log(data.success)
     })
+  
     //peer가 연결 해제 event를 서버로부터 수신받으면
     this.socket.on('peer-disconnected', data => {
       //연결 해제 log 출력
@@ -241,6 +267,8 @@ class App extends Component {
       selectedVideo: _video
     })
   }
+ 
+
   //frontend(peer상에서 보이는 화면)
   render() {
 
@@ -261,7 +289,23 @@ class App extends Component {
           videoStream={this.state.localStream}
           autoPlay muted>
         </Video>
+
+        <div style={{
+          zIndex: 2,
+          position: 'fixed',
+          top: 350,                                    
+        }}>
+          <span>
+          <button id="screenshare">화면공유</button>  
+          //화면공유 버튼(클릭시 화면공유 되는 event 발생)
+          <button id="localvideo">local video</button>  
+          //localvideo 버튼(클릭시 localvideo로 다시 전환하는 event발생)
+      
+          </span>
+        </div>
+     
         //remote video(selected)
+        
         <Video
           videoStyles={{
             zIndex: 1,
@@ -271,9 +315,12 @@ class App extends Component {
             minHeight: '100%',
             backgroundColor: 'black'
           }}
+          
           videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
           autoPlay>
         </Video>
+
+      
         // chat box
         <div style={{
           zIndex: 2,
