@@ -39,7 +39,7 @@ class Chat extends Component {
 
     componentDidMount() {
         this.socket = io.connect(
-            //ngrok 서버를 통해 socket 연결이 됨
+            //ngrok 서버를 통해 socket 연결이 됨ㄹㄹ
             this.serviceIP,
             {
                 path: '/webrtc',
@@ -59,14 +59,21 @@ class Chat extends Component {
     render() {
         return (
             <div class="container" id="chat">
-                <input id="message" type="text" onKeyDown={this.sendMessageEnter} placeholder="message" />
-                <button onClick={this.sendMessage}>Send</button>
                 <div id="chat=window">
                     <div id="output"></div>
                 </div>
+                <div style={{position: 'fixed', bottom: '137px'}}>
+                    <input id="message" type="text" size="33" style={{height: '30px'}} onKeyDown={this.sendMessageEnter} placeholder="message" />
+                    <button style={{height: '38px'}} onClick={this.sendMessage}>Send</button>
+                </div>
+            
+
             </div>
         )
     }
-    //chat box의 기본 틀
+    //
+    //chat box의 기본 틀 채팅 입력창 및 컨테이너 수정
+    
+
 }
 export default Chat

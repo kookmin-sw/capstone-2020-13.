@@ -3,6 +3,7 @@ import io from 'socket.io-client'
 import Video from './components/video'
 import Videos from './components/videos'
 import Chat from './components/chat'
+import './css.css';
 
 class App extends Component {
   constructor(props) {
@@ -38,7 +39,9 @@ class App extends Component {
 
     }
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
-    this.serviceIP = 'https://ee697ec9.ngrok.io/webrtcPeer'
+
+    this.serviceIP = 'https://78f351cb.ngrok.io/webrtcPeer'
+
     //socket 초기화
     this.socket = null
   
@@ -275,34 +278,21 @@ class App extends Component {
     console.log(this.state.localStream)
     return (
       <div>
-        //local video
-        <Video
+        //local video 
+        // 크기조정
+        <Video className='videoStyles'
           videoStyles={{
             zIndex: 2,
             position: 'fixed',
             top: 0,
-            width: 400,
-            height: 400,
+            width: 281,
+            height: 216,
             margin: 5,
             backgroundColor: 'black'
           }}
           videoStream={this.state.localStream}
           autoPlay muted>
         </Video>
-
-        <div style={{
-          zIndex: 2,
-          position: 'fixed',
-          top: 350,                                    
-        }}>
-          <span>
-          <button id="screenshare">화면공유</button>  
-          //화면공유 버튼(클릭시 화면공유 되는 event 발생)
-          <button id="localvideo">local video</button>  
-          //localvideo 버튼(클릭시 localvideo로 다시 전환하는 event발생)
-      
-          </span>
-        </div>
      
         //remote video(selected)
         
@@ -320,19 +310,21 @@ class App extends Component {
           autoPlay>
         </Video>
 
+
       
         // chat box
-        <div style={{
-          zIndex: 2,
-          position: 'fixed',
-          top: 0,
-          right: 10,
-          margin: 5,
-          width: 400,
-          bottom: 120,
-          backgroundColor: 'white'
-        }}>
+
+        // chat box 크기조정
+
+        <div className="chatbox">
           <Chat></Chat>
+          <div style={{position:'fixed', bottom: 174}}>
+            <button id="screenshare">화면공유</button>  
+            
+            <button id="localvideo">local video</button>  
+            
+      
+         </div>
         </div>
         <br />
         <div>
