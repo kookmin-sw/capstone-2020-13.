@@ -6,6 +6,33 @@ var io = require('socket.io')
     path: '/webrtc'
   })
 //server 생성(express + socket.io)
+var roomNum = Math.random()
+
+var mongoose = require('mongoose')
+
+mongoose.connect('mongodb+srv://chatDBMaster:dlawlghd12@clusterforchat-qj9sz.mongodb.net/test?retryWrites=true&w=majority')
+
+var db = mongoose.connection
+
+db.on('error', function () {
+  console.log('Connection Failed!')
+})
+
+db.once('open', function () {
+  console.log('Connected!')
+})
+
+var chat = mongoose.Schema({
+  roomNum: 'number',
+  memberId: 'string',
+  message: 'string',
+  time: { type: Date, default: Date.now }
+})
+
+var ChatMessage = mongoose.model('Schema', chat)
+
+var chattingLog = {}
+
 const app = express()
 //포트 번호 8080번으로 초기화
 const port = 8080
@@ -24,6 +51,15 @@ io.on('connection', socket => {
   console.log('client가 화상회의 참여합니다')
   socket.on('chat', (data) => {
     console.log('Received message!')
+    var newChatMessage = new ChatMessage({ roomNum: roomNum, memberId: socket.id, message: data.message })
+    newChatMessage.save(function (error, data) {
+      if (error) {
+        console.log(error)
+      }
+      else {
+        console.log('Saved!')
+      }
+    })
     io.sockets.emit('chat', {
       message: data.message,
       socketID: socket.id
@@ -31,6 +67,19 @@ io.on('connection', socket => {
   });
   //chat.js와의 통신으로 메세지를 주고 받음
   // 동시에 누가 보냈는지 식별을 위해 소켓 id를 인자로 같이 보내줌
+  socket.on('log', () => {
+    ChatMessage.find(function (error, chat) {
+      console.log('---Read all---')
+      if (error) console.log(error)
+      else {
+        console.log(chat)
+        console.log(chat[0].message)
+        chattingLog = JSON.stringify(chat)
+        io.sockets.to(socket.id).emit('log', chattingLog)
+      }
+    })
+
+  })
 })
 
 
