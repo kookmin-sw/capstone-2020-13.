@@ -1,0 +1,63 @@
+.chatbox {
+  z-Index: 2;
+  position: fixed;
+  top: 0px;
+  right: -2px;
+  margin: 5px;
+  width: 300px;
+  height: 579px;
+  bottom: 120px;
+  background-color: white;
+}
+
+.chatout {
+height: 472px;
+overflow-y: auto;
+}
+
+.chatdata {
+padding: 9px;
+border-radius: 5px;
+border: 1px solid #999;
+width: 280px;
+height: 35px;
+}
+
+.inputbox {
+position: absolute;
+bottom: 0;
+}
+
+p{
+width: 240px;
+float: left;
+margin-left: 5px;
+word-wrap: break-word;
+background: #4080ff;
+padding: 3%;
+color: white;
+border-radius: 10px;
+}
+
+h3{
+background-color: #4080ff;
+padding: 5px;
+color: #fff;
+}
+
+.chatbox2 {
+width: 300px;
+border: 1px solid #e8e6e6;
+margin: 1px;
+position: absolute;
+min-height: 590px; }
+
+.chat {
+max-height: 515px;
+overflow-y: auto;
+max-width: 350px;
+}
+.inputbutton {
+position: absolute;
+bottom: 53px;
+}
