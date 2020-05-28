@@ -63,32 +63,39 @@ class Chat extends Component {
         this.socket.on('log', (data) => {
             console.log(`${data} is JSON`)
             const outputLog = document.getElementById('outputLog')
-            outputLog.innerHTML = `${data}`
+
+            alert(data)
+
         })
 
     }
 
     render() {
         return (
-            <div class="chatout" id="chat">
-                <div id="chat=window">
-                    <div id="output"></div>
+
+            <div class="chatbox2" id="chat">
+                <h3> opensource design</h3>
+                <div id='scroll' className='chat'>
+
+                    <ui id="output"></ui>
                 </div>
 
-                <div style={{position: 'fixed', bottom: '137px'}}>
-                    <input id="message" type="text" size="33" style={{height: '30px'}} onKeyDown={this.sendMessageEnter} placeholder="message" />
-                    <button style={{height: '38px'}} onClick={this.sendMessage}>Send</button>
-                    <div id="chattingLog=window">
-                      <div id="outputLog"></div>
-                    </div>
+                <div className='inputbox'>
+                    <input id="message" type="text" className='chatdata' onKeyDown={this.sendMessageEnter} placeholder="message" />
+                </div>
+                <div className='inputbutton'>
+                    <button id="screenshare">화면공유</button>
+                    <button id="localvideo">local video</button>
+                    <button id="chattinglog" onClick={this.chattingLog}>채팅 로그</button>
+                    <div id="outputLog"></div>
+        
                 </div>
      
             </div>
         )
     }
-    //
-    //chat box의 기본 틀 채팅 입력창 및 컨테이너 수정
-    
+
+    //chat box의 기본 틀 채팅 입력창 및 컨테이너 수정  
 
 }
 export default Chat
