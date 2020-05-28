@@ -40,11 +40,12 @@ class App extends Component {
     }
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
 
-    this.serviceIP ='https://6141f85832fc.ngrok.io/webrtcPeer'
+
+
+    this.serviceIP = 'https://78f351cb.ngrok.io/webrtcPeer'
 
     //socket 초기화
     this.socket = null
-  
   }
 
   getLocalStream = () => {
@@ -189,6 +190,7 @@ class App extends Component {
       //getLocalStream method 호출을 통해 자신의 stream 가져오기
       
       this.getLocalStream()
+
       //연결 성공 log 출력
       console.log(data.success)
     })
@@ -323,7 +325,12 @@ class App extends Component {
 
         <div className="chatbox">
           <Chat></Chat>
-          <div style={{position:'fixed', bottom: 174}}>                          
+
+          <div style={{position:'fixed', bottom: 174}}>
+            <button id="screenshare">화면공유</button>  
+            
+            <button id="localvideo">local video</button>  
+             
          </div>
         </div>
         <br />

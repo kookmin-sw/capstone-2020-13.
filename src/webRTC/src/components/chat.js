@@ -63,13 +63,16 @@ class Chat extends Component {
         this.socket.on('log', (data) => {
             console.log(`${data} is JSON`)
             const outputLog = document.getElementById('outputLog')
+
             alert(data)
+
         })
 
     }
 
     render() {
         return (
+
             <div class="chatbox2" id="chat">
                 <h3> opensource design</h3>
                 <div id='scroll' className='chat'>
@@ -85,14 +88,14 @@ class Chat extends Component {
                     <button id="localvideo">local video</button>
                     <button id="chattinglog" onClick={this.chattingLog}>채팅 로그</button>
                     <div id="outputLog"></div>
+        
                 </div>
+     
             </div>
         )
     }
 
-    //
-    //chat box의 기본 틀 채팅 입력창 및 컨테이너 수정
-
+    //chat box의 기본 틀 채팅 입력창 및 컨테이너 수정  
 
 }
 export default Chat

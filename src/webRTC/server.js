@@ -60,6 +60,7 @@ io.on('connection', socket => {
         console.log('Saved!')
       }
     })
+ 
     io.sockets.emit('chat',{
       message:data.message,
       socketID: socket.id
@@ -68,6 +69,7 @@ io.on('connection', socket => {
   });
   //chat.js와의 통신으로 메세지를 주고 받음
   // 동시에 누가 보냈는지 식별을 위해 소켓 id를 인자로 같이 보내줌
+
 
   socket.on('log', () => {
     ChatMessage.find({roomNum:roomNum},function (error, chat) {
