@@ -13,25 +13,28 @@ class Chat extends Component {
     }
     sendMessageEnter() {
         if (window.event.keyCode == 13) {
-            const message = document.getElementById('message')
+            var message = document.getElementById('message')
 
             this.socket.emit('chat', {
                 message: message.value
             }, () => {
                 console.log(`message : ${message.value}`)
             })
+            message.value = ''
         }
     }
     // enter 키로 sendMessage() 실행 -> 최적화 필요
 
     sendMessage() {
-        const message = document.getElementById('message')
+        var message = document.getElementById('message')
 
         this.socket.emit('chat', {
             message: message.value
         }, () => {
             console.log(`message : ${message.value}`)
         })
+
+        message.value = ''
 
     }
     // server.js와의 통신을 통해 메세지를 보내는 주된 함수
@@ -57,6 +60,11 @@ class Chat extends Component {
             output.innerHTML += `<p> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
         })
         //server.js에서 보내주는 데이터를 받아 출력
+        this.socket.on('log', (data) => {
+            console.log(`${data} is JSON`)
+            const outputLog = document.getElementById('outputLog')
+            outputLog.innerHTML = `${data}`
+        })
 
     }
 
@@ -69,6 +77,9 @@ class Chat extends Component {
                     <div id="output"></div>
                 </div>
                 <button onClick={this.chattingLog}>Show Chatting Log</button>
+                <div id="chattingLog=window">
+                    <div id="outputLog"></div>
+                </div>
             </div>
         )
     }

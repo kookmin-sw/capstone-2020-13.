@@ -31,6 +31,8 @@ var chat = mongoose.Schema({
 
 var ChatMessage = mongoose.model('Schema', chat)
 
+var chattingLog = {}
+
 const app = express()
 //포트 번호 8080번으로 초기화
 const port = 8080
@@ -69,8 +71,14 @@ io.on('connection', socket => {
     ChatMessage.find(function (error, chat) {
       console.log('---Read all---')
       if (error) console.log(error)
-      else console.log(chat)
+      else {
+        console.log(chat)
+        console.log(chat[0].message)
+        chattingLog = JSON.stringify(chat)
+        io.sockets.to(socket.id).emit('log', chattingLog)
+      }
     })
+
   })
 })
 
