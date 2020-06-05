@@ -41,7 +41,8 @@ class App extends Component {
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
 
 
-    this.serviceIP = 'https://78f351cb.ngrok.io/webrtcPeer'
+
+    this.serviceIP = 'https://ac596938f5d6.ngrok.io/webrtcPeer'
 
     //socket 초기화
     this.socket = null
@@ -75,29 +76,31 @@ class App extends Component {
     //screenshare 버튼 클릭시 
     var screenshare = document.getElementById("screenshare")
     //local video 클릭시
-    var localvideo = document.getElementById("localvideo")  
+    var localvideo = document.getElementById("localvideo")
 
-    //default => local video
-    navigator.mediaDevices.getUserMedia(constraints)
-    .then(success)
-    .catch(failure)
-    
+
+    // //default => local video
+    // navigator.mediaDevices.getUserMedia(constraints)
+    // .then(success)
+    // .catch(failure)
+
     //screenshare 버튼 클릭시 displaymedia 가져오기
-    screenshare.onclick=function(){
-    navigator.mediaDevices.getDisplayMedia(constraints)
-      .then(success)
-      .catch(failure)
+    screenshare.onclick = function () {
+      navigator.mediaDevices.getDisplayMedia(constraints)
+        .then(success)
+        .catch(failure)
     }
+
     //localvideo 버튼 클릭시 usermedia 가져오기
-    localvideo.onclick=function(){
+    localvideo.onclick = function () {
       navigator.mediaDevices.getUserMedia(constraints)
-      .then(success)
-      .catch(failure)
+        .then(success)
+        .catch(failure)
     }
   }
 
 
-        
+
 
   whoisOnline = () => {
     //서버에 자신(local peer)의 정보를 전송
@@ -118,6 +121,7 @@ class App extends Component {
       this.setState({
         peerConnections
       })
+
 
       pc.onicecandidate = (e) => {
         //candidate 정보가 존재한다면
@@ -184,13 +188,13 @@ class App extends Component {
     //peer가 연결 성공 event를 서버로부터 수신받으면
     this.socket.on('connection-success', data => {
       //getLocalStream method 호출을 통해 자신의 stream 가져오기
-      
+
       this.getLocalStream()
 
       //연결 성공 log 출력
       console.log(data.success)
     })
-  
+
     //peer가 연결 해제 event를 서버로부터 수신받으면
     this.socket.on('peer-disconnected', data => {
       //연결 해제 log 출력
@@ -206,6 +210,8 @@ class App extends Component {
       }
       )
     })
+
+
     //online-peer event를 서버로부터 수신받으면
     this.socket.on('online-peer', socketID => {
       //연결된 모든 peer에 대한 정보 출력해주기
@@ -271,7 +277,7 @@ class App extends Component {
       selectedVideo: _video
     })
   }
- 
+
 
   //frontend(peer상에서 보이는 화면)
   render() {
@@ -294,9 +300,9 @@ class App extends Component {
           videoStream={this.state.localStream}
           autoPlay muted>
         </Video>
-     
+
         //remote video(selected)
-        
+
         <Video
           videoStyles={{
             zIndex: 1,
@@ -306,26 +312,19 @@ class App extends Component {
             minHeight: '100%',
             backgroundColor: 'black'
           }}
-          
+
           videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
           autoPlay>
         </Video>
 
 
-      
+
         // chat box
 
         // chat box 크기조정
 
         <div className="chatbox">
           <Chat></Chat>
-          <div style={{position:'fixed', bottom: 174}}>
-            <button id="screenshare">화면공유</button>  
-            
-            <button id="localvideo">local video</button>  
-            
-      
-         </div>
         </div>
         <br />
         <div>
