@@ -57,7 +57,9 @@ class Chat extends Component {
         this.socket.on('chat', data => {
             console.log('data send')
             const output = document.getElementById('output');
-            output.innerHTML += `<p> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
+            if (data.socketID == this.socket.id) output.innerHTML += `<p id="fromMe"> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
+            else output.innerHTML += `<p id="fromOther"> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
+
             var scrollbar = document.getElementById("scroll")
             scrollbar.scrollTop = scrollbar.scrollHeight
 
