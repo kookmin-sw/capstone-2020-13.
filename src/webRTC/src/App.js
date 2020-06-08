@@ -40,7 +40,9 @@ class App extends Component {
     }
    
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
+
     this.serviceIP ='https://a994bcbc5d7a.ngrok.io/webrtcPeer'
+
     //socket 초기화
     this.socket = null
   }
@@ -75,7 +77,14 @@ class App extends Component {
     //screenshare 버튼 클릭시 
     var screenshare = document.getElementById("screenshare")
     //local video 클릭시
-    var localvideo = document.getElementById("localvideo")  
+    var localvideo = document.getElementById("localvideo")
+
+
+    // //default => local video
+    // navigator.mediaDevices.getUserMedia(constraints)
+    // .then(success)
+    // .catch(failure)
+
 
 
     //default => local video
@@ -88,8 +97,11 @@ class App extends Component {
       navigator.mediaDevices.getDisplayMedia(constraints)
       .then(success)
       .catch(failure)   
+
     }
+
     //localvideo 버튼 클릭시 usermedia 가져오기
+
     localvideo.onclick=function(){      
       navigator.mediaDevices.getUserMedia(constraints)
       .then(success)
@@ -118,6 +130,7 @@ class App extends Component {
         peerConnections
       })
     
+
 
       pc.onicecandidate = (e) => {
         //candidate 정보가 존재한다면
@@ -215,12 +228,12 @@ class App extends Component {
     //peer가 연결 성공 event를 서버로부터 수신받으면
     this.socket.on('connection-success', data => {
       //getLocalStream method 호출을 통해 자신의 stream 가져오기
-      
+
       this.getLocalStream()
       //연결 성공 log 출력
       console.log(data.success)
     })
-    
+
     //peer가 연결 해제 event를 서버로부터 수신받으면
     this.socket.on('peer-disconnected', data => {
       //연결 해제 log 출력
@@ -236,8 +249,6 @@ class App extends Component {
       }
       )
     })
-
-    
 
 
     //online-peer event를 서버로부터 수신받으면
@@ -305,7 +316,7 @@ class App extends Component {
       selectedVideo: _video
     })
   }
- 
+
 
   //frontend(peer상에서 보이는 화면)
   render() {
@@ -341,12 +352,13 @@ class App extends Component {
           videoStream={this.state.localStream}
           autoPlay muted>
         </Video>
+
         </div>
         
         
-        
+
         //remote video(selected)
-        
+
         <Video
           videoStyles={{
             zIndex: 1,            
@@ -355,6 +367,7 @@ class App extends Component {
             minWidth: '100%',
             minHeight: '100%',
             backgroundColor: 'black'
+
           }}          
           videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
           autoPlay>
@@ -368,14 +381,17 @@ class App extends Component {
         <i onClick={(e) => {this.setState({disconnected: true})}} style={{ cursor: 'pointer', paddingLeft: 15, color: 'red' }} class='material-icons'>화상회의 퇴장</i>
         </div>
       
+
         // chat box
 
         // chat box 크기조정
 
         <div className="chatbox">
           <Chat></Chat>
+
           <div style={{position:'fixed', bottom: 174}}>                          
          </div>
+
         </div>
 
         <br />

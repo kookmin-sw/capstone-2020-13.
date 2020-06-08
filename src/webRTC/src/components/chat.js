@@ -57,7 +57,12 @@ class Chat extends Component {
         this.socket.on('chat', data => {
             console.log('data send')
             const output = document.getElementById('output');
-            output.innerHTML += `<p> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
+            if (data.socketID == this.socket.id) output.innerHTML += `<p id="fromMe"> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
+            else output.innerHTML += `<p id="fromOther"> <strong>` + data.socketID + ': </strong>' + data.message + `</p>`
+
+            var scrollbar = document.getElementById("scroll")
+            scrollbar.scrollTop = scrollbar.scrollHeight
+
         })
         //server.js에서 보내주는 데이터를 받아 출력
         this.socket.on('log', (data) => {
@@ -82,18 +87,21 @@ class Chat extends Component {
 
                 <div className='inputbox'>
                     <input id="message" type="text" className='chatdata' onKeyDown={this.sendMessageEnter} placeholder="message" />
+
                 </div>
                 <div className='inputbutton'>
                     <button id="screenshare">화면공유</button>
                     <button id="localvideo">local video</button>
                     <button id="chattinglog" onClick={this.chattingLog}>채팅 로그</button>
                     <div id="outputLog"></div>
-        
+
                 </div>
-     
+
             </div>
         )
+
     }
+
 
     //chat box의 기본 틀 채팅 입력창 및 컨테이너 수정  
 
