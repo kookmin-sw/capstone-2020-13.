@@ -1,6 +1,7 @@
 //express 연동
 const express = require('express')
 //socket.io 연동
+var fs = require('fs-path')
 var io = require('socket.io')
   ({
     path: '/webrtc'
@@ -31,8 +32,6 @@ var chat = mongoose.Schema({
 
 var ChatMessage = mongoose.model('Schema', chat)
 
-var chattingLog = {}
-
 const app = express()
 //포트 번호 8080번으로 초기화
 const port = 8080
@@ -46,8 +45,9 @@ const server = app.listen(port, () => console.log(`${port}포트에서 화상회
 //web server는 socket.io에 의하여 실시간통신됨
 io.listen(server)
 // default namespace
-io.on('connection', socket => {  
+io.on('connection', socket => {
   // connection 성공시 참여 log 띄우기
+  var textNum = 1
   console.log('client가 화상회의 참여합니다')
   socket.on('chat', (data) => {
     console.log('Received message!')
@@ -60,27 +60,33 @@ io.on('connection', socket => {
         console.log('Saved!')
       }
     })
- 
-    io.sockets.emit('chat',{
-      message:data.message,
+
+    io.sockets.emit('chat', {
+      message: data.message,
       socketID: socket.id
-    })        
-    
+    })
+
   });
   //chat.js와의 통신으로 메세지를 주고 받음
   // 동시에 누가 보냈는지 식별을 위해 소켓 id를 인자로 같이 보내줌
 
 
   socket.on('log', () => {
-    ChatMessage.find({roomNum:roomNum},function (error, chat) {
+    ChatMessage.find({ roomNum: roomNum }, function (error, chat) {
       console.log('---Read all---')
       if (error) console.log(error)
       else {
-        console.log(chat)
-        console.log(chat[0].message)
-        chattingLog = JSON.stringify(chat)
-        io.sockets.to(socket.id).emit('log', chattingLog)
+        var chattinglog = JSON.stringify(chat)
+        io.sockets.to(socket.id).emit('log', chattinglog)
+
+        fs.writeFile(`chattingLog/text${textNum}.txt`, chat, function (err) {
+          if (err) {
+            console.log(err)
+          }
+          else textNum++
+        })
       }
+
     })
   })
 })

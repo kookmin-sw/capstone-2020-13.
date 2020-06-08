@@ -9,6 +9,7 @@ class Chat extends Component {
         this.sendMessage = this.sendMessage.bind(this)
         this.sendMessageEnter = this.sendMessageEnter.bind(this)
         this.chattingLog = this.chattingLog.bind(this)
+        this.downloadTextFile = this.downloadTextFile.bind(this)
         // 메세지를 보내주는 주된 함수의 바인딩
     }
     sendMessageEnter() {
@@ -42,6 +43,13 @@ class Chat extends Component {
     chattingLog() {
         this.socket.emit('log')
     }
+    downloadTextFile(text, name) {
+        const a = document.createElement('a')
+        const type = name.split('.').pop()
+        a.href = URL.createObjectURL(new Blob([text], { type: `text/${type === "txt" ? "plain" : type}` }))
+        a.download = name
+        a.click()
+    }
 
 
     componentDidMount() {
@@ -66,10 +74,11 @@ class Chat extends Component {
         })
         //server.js에서 보내주는 데이터를 받아 출력
         this.socket.on('log', (data) => {
-            console.log(`${data} is JSON`)
-            const outputLog = document.getElementById('outputLog')
-
-            alert(data)
+            var jsonData = JSON.parse(data)
+            jsonData.forEach(function (n) {
+                console.log(`${n.memberId} : ${n.message} (${n.time})`)
+            })
+            this.downloadTextFile(data, `text.txt`)
 
         })
 
