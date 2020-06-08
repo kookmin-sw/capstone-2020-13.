@@ -38,15 +38,15 @@ class App extends Component {
       },
 
     }
+   
     //ngrok을 통해 localhost를 공용 IP로 배포(수시로 바뀜, ngrok의 경우 12시간 유효)
 
-
-
-    this.serviceIP = 'https://ac596938f5d6.ngrok.io/webrtcPeer'
+    this.serviceIP ='https://a994bcbc5d7a.ngrok.io/webrtcPeer'
 
     //socket 초기화
     this.socket = null
   }
+
 
   getLocalStream = () => {
     //연결 성공시
@@ -61,13 +61,14 @@ class App extends Component {
     }
     //연결 실패시 
     const failure = (e) => {
+      this.videoref = 
       //error log 출력
       console.log('getUserMedia Error: ', e)
     }
     //audio, video 제약 조건(화상회의 옵션)
     const constraints = {
       //일단 audio는 false로...
-      audio: false,
+      audio: true,
       video: true,
       options: {
         mirror: true,
@@ -84,22 +85,29 @@ class App extends Component {
     // .then(success)
     // .catch(failure)
 
+
+
+    //default => local video
+    // navigator.mediaDevices.getUserMedia(constraints)
+    // .then(success)    
+    // .catch(failure)
+    
     //screenshare 버튼 클릭시 displaymedia 가져오기
-    screenshare.onclick = function () {
+    screenshare.onclick=function(){
       navigator.mediaDevices.getDisplayMedia(constraints)
-        .then(success)
-        .catch(failure)
+      .then(success)
+      .catch(failure)   
+
     }
 
     //localvideo 버튼 클릭시 usermedia 가져오기
-    localvideo.onclick = function () {
+
+    localvideo.onclick=function(){      
       navigator.mediaDevices.getUserMedia(constraints)
-        .then(success)
-        .catch(failure)
-    }
+      .then(success)
+      .catch(failure)                    
+    }    
   }
-
-
 
 
   whoisOnline = () => {
@@ -121,6 +129,7 @@ class App extends Component {
       this.setState({
         peerConnections
       })
+    
 
 
       pc.onicecandidate = (e) => {
@@ -135,16 +144,43 @@ class App extends Component {
       }
       pc.oniceconnectionstatechange = (e) => {
       }
-      pc.ontrack = (e) => {
-        const remoteVideo = {
-          id: socketID,
-          name: socketID,
-          stream: e.streams[0]
+      pc.ontrack = (e) => {                      
+         let _remoteStream = null
+         let remoteStreams = this.state.remoteStreams
+         let remoteVideo = {}
+        
+         //stream이 remoteStreams에 존재하는지 체크
+         const rVideos = this.state.remoteStreams.filter(stream => stream.id === socketID)
+                  
+         
+         //존재한다면 track에 add
+         if (rVideos.length) {                   
+          _remoteStream = rVideos[0].stream
+          _remoteStream.addTrack(e.track, _remoteStream)
+          remoteVideo = {                        
+            ...rVideos[0],
+            stream: _remoteStream,
+          }
+          remoteStreams = this.state.remoteStreams.map(_remoteVideo => {
+            return _remoteVideo.id === remoteVideo.id && remoteVideo || _remoteVideo
+          })                    
+        }                 
+        else {
+          //존재하지 않는다면 new stream 생성하고 track에 add하기
+          _remoteStream = new MediaStream()
+          _remoteStream.addTrack(e.track, _remoteStream)
+          remoteVideo = {
+            id: socketID,
+            name: socketID,
+            stream: _remoteStream,
+          }
+          remoteStreams = [...this.state.remoteStreams, remoteVideo]
         }
+
         this.setState(prevState => {
           // stream이 있다면 유지, 없을시 최신의 stream(가장 최신 참여자) 사용
-          const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: e.streams[0] }
-          // 현재 선택된 비디오 얻기
+          const remoteStream = prevState.remoteStreams.length > 0 ? {} : { remoteStream: _remoteStream}
+          // 현재 선택된 비디오 얻기             
           let selectedVideo = prevState.remoteStreams.filter(stream => stream.id === prevState.selectedVideo.id)
           // 비디오가 리스트에 있다면 유지, 없다면 새로운 video stream으로 세팅
           selectedVideo = selectedVideo.length ? {} : { selectedVideo: remoteVideo }
@@ -153,17 +189,21 @@ class App extends Component {
             ...selectedVideo,
             // remoteStream: e.streams[0],
             ...remoteStream,
-            remoteStreams: [...prevState.remoteStreams, remoteVideo]
+            remoteStreams,
           }
         })
       }
+     
       pc.close = () => {
         // alert('GONE')
       }
 
 
       if (this.state.localStream)
-        pc.addStream(this.state.localStream)
+        this.state.localStream.getTracks().forEach(track => {
+          pc.addTrack(track, this.state.localStream)
+        })
+
       // pc를 return
       callback(pc)
     } catch (e) {
@@ -190,7 +230,6 @@ class App extends Component {
       //getLocalStream method 호출을 통해 자신의 stream 가져오기
 
       this.getLocalStream()
-
       //연결 성공 log 출력
       console.log(data.success)
     })
@@ -282,42 +321,66 @@ class App extends Component {
   //frontend(peer상에서 보이는 화면)
   render() {
 
+    if (this.state.disconnected) {
+      this.socket.close()
+      this.state.localStream.getTracks().forEach(track => track.stop())
+      return (<div>You have successfully Disconnected</div>)
+    }    
     console.log(this.state.localStream)
     return (
-      <div>
-        //local video 
-        // 크기조정
-        <Video className='videoStyles'
-          videoStyles={{
-            zIndex: 2,
-            position: 'fixed',
-            top: 0,
-            width: 281,
-            height: 216,
+       //local video 
+      // 크기조정
+      <div>           
+        <div style={{
+          zIndex : 101,
+          position: 'absolute',
+          left : 0,
+          top: 100,          
+        }}>
+        <Video 
+          videoStyles={{                                                                        
+            width: 281,                        
+            height: 216,               
+          }}            
+          frameStyle={{
+            width : 281,
             margin: 5,
-            backgroundColor: 'black'
-          }}
+            borderradius : 50,
+            backgroundColor: 'black',  
+          }}             
+          showMuteControls={true}                                                      
           videoStream={this.state.localStream}
           autoPlay muted>
         </Video>
+
+        </div>
+        
+        
 
         //remote video(selected)
 
         <Video
           videoStyles={{
-            zIndex: 1,
+            zIndex: 1,            
             position: 'fixed',
             bottom: 0,
             minWidth: '100%',
             minHeight: '100%',
             backgroundColor: 'black'
-          }}
 
+          }}          
           videoStream={this.state.selectedVideo && this.state.selectedVideo.stream}
           autoPlay>
         </Video>
-
-
+        <br/>
+        <div style={{
+          zIndex:3,
+          top:10,
+          position : 'absolute',
+        }}>
+        <i onClick={(e) => {this.setState({disconnected: true})}} style={{ cursor: 'pointer', paddingLeft: 15, color: 'red' }} class='material-icons'>화상회의 퇴장</i>
+        </div>
+      
 
         // chat box
 
@@ -325,8 +388,14 @@ class App extends Component {
 
         <div className="chatbox">
           <Chat></Chat>
+
+          <div style={{position:'fixed', bottom: 174}}>                          
+         </div>
+
         </div>
+
         <br />
+
         <div>
           //video 리스트들 출력(remote video들..)
           <Videos

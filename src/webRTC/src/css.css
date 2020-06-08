@@ -5,7 +5,9 @@
   right: -2px;
   margin: 5px;
   width: 300px;
+
   height: 700px;
+
   bottom: 120px;
   background-color: white;
 }
@@ -27,6 +29,7 @@ height: 35px;
 position: absolute;
 bottom: 0;
 }
+
 
 #fromMe{
   width: 240px;
@@ -51,6 +54,7 @@ bottom: 0;
     }
   
 
+
 h3{
 background-color: #4080ff;
 padding: 5px;
@@ -62,7 +66,9 @@ width: 300px;
 border: 1px solid #e8e6e6;
 margin: 1px;
 position: absolute;
+
 min-height: 700px; }
+
 
 .chat {
 max-height: 515px;

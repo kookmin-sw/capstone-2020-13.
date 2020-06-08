@@ -77,6 +77,7 @@ class Chat extends Component {
 
     render() {
         return (
+
             <div class="chatbox2" id="chat">
                 <h3> opensource design</h3>
                 <div id='scroll' className='chat'>
@@ -86,6 +87,7 @@ class Chat extends Component {
 
                 <div className='inputbox'>
                     <input id="message" type="text" className='chatdata' onKeyDown={this.sendMessageEnter} placeholder="message" />
+
                 </div>
                 <div className='inputbutton'>
                     <button id="screenshare">화면공유</button>
