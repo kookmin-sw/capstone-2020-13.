@@ -55,7 +55,7 @@
 
 - 김현중(팀장)
 
-<img src="./Image/hyunjoong.jpg" height=250></img>
+<img src="./Image/hyunjoong.jpg" height="250">
  
  ```
  * 학번: 20153167
@@ -65,7 +65,7 @@
 
 - 손진호 
  
-<img src="./Image/jinho.jpg" height=250></img>
+<img src="./Image/jinho.jpg" height="250">
  
   ```
  * 학번: 20141763 
@@ -75,7 +75,7 @@
 
 - 박성환 
  
-<img src="./Image/sunghwan.jpg" height=250></img>
+<img src="./Image/sunghwan.jpg" height="250">
  
   ```
  * 학번: 20141757
@@ -85,7 +85,7 @@
 
 - 구민재  
  
-<img src="./Image/minjae.jpg" height=250></img>
+<img src="./Image/minjae.jpg" height="250">
  
   ```
  * 학번: 20153150
@@ -95,7 +95,7 @@
 
  - 임지홍  
  
-<img src="./Image/jihong.jpg" height=250></img>
+<img src="./Image/jihong.jpg" height="250">
  
   ```
  * 학번: 20153220 
