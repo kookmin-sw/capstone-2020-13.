@@ -105,7 +105,7 @@
  ## 5. 사용법
 
 
-- 오픈소스디자인사이트 https://203.246.113.131:3001 에 접속후 로그인을 합니다.
+- 오픈소스디자인사이트 (https://opensrcdesign.com) 에 접속후 로그인을 합니다.
 
 - 화상회의를 진행하고자 하는 디자인 페이지로 이동합니다. 
   
@@ -129,7 +129,7 @@
 
   - 최종 시연 영상 
   
-  [![image](./Image/opensrc.jpg)](https://www.youtube.com/watch?v=EQQhxetNqt0)
+  [![image](./Image/opensrc.jpg)](https://www.youtube.com/watch?v=1dFiHZNm9i0)
   
 
 
