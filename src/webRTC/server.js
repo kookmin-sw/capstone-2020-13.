@@ -1,7 +1,6 @@
 //express 연동
 const express = require('express')
 //socket.io 연동
-var fs = require('fs-path')
 var io = require('socket.io')
   ({
     path: '/webrtc'
@@ -70,21 +69,13 @@ io.on('connection', socket => {
   //chat.js와의 통신으로 메세지를 주고 받음
   // 동시에 누가 보냈는지 식별을 위해 소켓 id를 인자로 같이 보내줌
 
-
   socket.on('log', () => {
-    ChatMessage.find({ roomNum: roomNum }, function (error, chat) {
+    ChatMessage.find({ roomNum: roomNum }, { _id: false, memberId: true, message: true, time: true }, function (error, chat) {
       console.log('---Read all---')
       if (error) console.log(error)
       else {
         var chattinglog = JSON.stringify(chat)
         io.sockets.to(socket.id).emit('log', chattinglog)
-
-        fs.writeFile(`chattingLog/text${textNum}.txt`, chat, function (err) {
-          if (err) {
-            console.log(err)
-          }
-          else textNum++
-        })
       }
 
     })

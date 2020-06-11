@@ -72,13 +72,11 @@ class Chat extends Component {
             scrollbar.scrollTop = scrollbar.scrollHeight
 
         })
+        var num = 1
         //server.js에서 보내주는 데이터를 받아 출력
         this.socket.on('log', (data) => {
-            var jsonData = JSON.parse(data)
-            jsonData.forEach(function (n) {
-                console.log(`${n.memberId} : ${n.message} (${n.time})`)
-            })
-            this.downloadTextFile(data, `text.txt`)
+            this.downloadTextFile(data, `text${num}.txt`)
+            num++
 
         })
 
