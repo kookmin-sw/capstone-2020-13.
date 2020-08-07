@@ -74,7 +74,6 @@
 
 - 박성환 
  
-<img src="./Image/sunghwan.jpg" height=250></img>
  
   ```
  * 학번: 20141757
