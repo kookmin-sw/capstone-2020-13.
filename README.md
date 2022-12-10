@@ -54,7 +54,6 @@
 
 - 김현중(팀장)
 
-<img src="./Image/hyunjoong.jpg" height=250></img>
  
  ```
  * 학번: 20153167
